@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+# coding=utf-8
+
+'''resources-viewer
+'''
+
+# Standard library imports.
+import sys
+import os
+import atexit
+import gc
+import re
+import logging
+import argparse
+import json
+from pprint import pprint
+from itertools import chain
+from subprocess import Popen, PIPE
+
+# Related third party imports.
+#
+
+# GLOBAL CONSTANT names.
+PN = os.path.splitext(os.path.basename(sys.argv[0]))[0]
+LOG_FMT = '[{0}]: %(message)s'.format(PN)
+
+def on_exit():
+    gc.collect()
+
+def validate_args(args):
+    assert args.data
+    assert args.metadata
+
+def get_tagged_resources(metadata, tags):
+    for tag in tags:
+        for resource in metadata:
+            if tag in resource['tags']:
+                yield resource
+
+# Setup
+logging.basicConfig(format=LOG_FMT, level=logging.INFO)
+parser = argparse.ArgumentParser()
+parser.add_argument('data')
+parser.add_argument('metadata')
+args = parser.parse_args()
+
+validate_args(args)
+atexit.register(on_exit)
+
+with open(args.metadata) as f:
+    metadata = json.load(f)
+
+tags = list(set(chain.from_iterable(i['tags'] for i in metadata)))
+
+resources_by_tag = {}
+for tag in tags:
+    resources_by_tag[tag] = [
+            resource for resource in get_tagged_resources(metadata, (tag,))]
+
+pprint(resources_by_tag)
+
+# vim: ft=python
