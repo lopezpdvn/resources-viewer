@@ -19,4 +19,4 @@ clean:
 
 build:	clean
 	@cp -av css/ $(SITE_BUILD_FP)
-	@cp -v index.html $(SITE_BUILD_FP)
+	@cp -v _includes/index.html $(SITE_BUILD_FP)
