@@ -19,6 +19,10 @@
 
   "config": {
     "thumbnail_id": "thumbnail",
-    "log_format": "[{0}]: %(message)s"
+    "log_format": "[{0}]: %(message)s",
+    "title": "resources-viewer",
+    "includes": "_includes",
+    "homeuri": "index.html",
+    "stylesheets": "css"
   }
 }

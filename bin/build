@@ -18,14 +18,15 @@ from pprint import pprint
 from itertools import chain
 from subprocess import Popen, PIPE
 from os.path import abspath, dirname, join, basename
+from shutil import copytree
 
 # Related third party imports.
 from pysyspol.util import getdir
 
 # Configuration and GLOBAL CONSTANT names.
 PN = os.path.splitext(os.path.basename(sys.argv[0]))[0]
-script_dir = getdir(inspect.currentframe())
-configfp = join(dirname(script_dir), 'package.json')
+SCRIPT_DIR = getdir(inspect.currentframe())
+configfp = join(dirname(SCRIPT_DIR), 'package.json')
 with open(configfp) as f:
     CFG = json.load(f)['config']
 LOG_FMT = CFG['log_format'].format(PN)
@@ -43,11 +44,22 @@ def get_tagged_resources(metadata, tags):
             if tag in resource['tags']:
                 yield resource
 
+def build_index():
+    viewerfp = abspath(args.viewer)
+    with open(join(SCRIPT_DIR, '..', CFG['includes'], CFG['homeuri'])) as f:
+        indexdata = f.read().format(title=CFG['title'])
+    with open(join(viewerfp, CFG['homeuri']), 'w') as f:
+        f.write(indexdata)
+    stylesheetsfp = join(SCRIPT_DIR, '..', CFG['stylesheets'])
+    copytree(stylesheetsfp, join(viewerfp, CFG['stylesheets']))
+    logging.info('Written index')
+
 # Setup
 logging.basicConfig(format=CFG['log_format'].format(PN), level=logging.INFO)
 parser = argparse.ArgumentParser()
 parser.add_argument('data')
 parser.add_argument('metadata')
+parser.add_argument('viewer')
 args = parser.parse_args()
 
 validate_args(args)
@@ -63,6 +75,8 @@ for tag in tags:
     resources_by_tag[tag] = [
             resource for resource in get_tagged_resources(metadata, (tag,))]
 
-pprint(resources_by_tag)
+#build_resource_pages()
+#build_tag_pages()
+build_index()
 
 # vim: ft=python
