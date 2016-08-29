@@ -20,15 +20,12 @@ from subprocess import Popen, PIPE
 from os.path import abspath, dirname, join, basename
 
 # Related third party imports.
-#
-
-def get_script_dir():
-    return dirname(abspath(
-        inspect.getfile(inspect.currentframe()))).rstrip(os.sep)
+from pysyspol.util import getdir
 
 # Configuration and GLOBAL CONSTANT names.
 PN = os.path.splitext(os.path.basename(sys.argv[0]))[0]
-configfp = join(dirname(get_script_dir()), 'package.json')
+script_dir = getdir(inspect.currentframe())
+configfp = join(dirname(script_dir), 'package.json')
 with open(configfp) as f:
     CFG = json.load(f)['config']
 LOG_FMT = CFG['log_format'].format(PN)
