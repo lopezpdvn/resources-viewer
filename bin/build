@@ -18,6 +18,7 @@ from pprint import pprint
 from itertools import chain
 from subprocess import Popen, PIPE
 from os.path import abspath, dirname, join, basename
+from os import mkdir
 from shutil import copytree
 
 # Related third party imports.
@@ -44,15 +45,34 @@ def get_tagged_resources(metadata, tags):
             if tag in resource['tags']:
                 yield resource
 
-def build_index():
+def build_index(data):
     viewerfp = abspath(args.viewer)
-    with open(join(SCRIPT_DIR, '..', CFG['includes'], CFG['homeuri'])) as f:
-        indexdata = f.read().format(title=CFG['title'])
-    with open(join(viewerfp, CFG['homeuri']), 'w') as f:
+    tags = sorted(list(data.keys()))
+    tag_pages_links = [CFG['tag_link_tmpl'].format(tag=tag) for tag in tags]
+    tag_pages = CFG['tag_links_tmpl'].format(tags=''.join(tag_pages_links))
+
+    with open(join(SCRIPT_DIR, '..', CFG['includes'], CFG['uri']['home'])) as f:
+        indexdata = f.read().format(title=CFG['title'], tag_pages=tag_pages)
+    with open(join(viewerfp, CFG['uri']['home']), 'w') as f:
         f.write(indexdata)
+
     stylesheetsfp = join(SCRIPT_DIR, '..', CFG['stylesheets'])
     copytree(stylesheetsfp, join(viewerfp, CFG['stylesheets']))
     logging.info('Written index')
+
+def build_tag_pages(data):
+    tags = data.keys()
+    templatefp = join(SCRIPT_DIR, '..', CFG['includes'], CFG['tag_tmpl'])
+    mkdir(join(abspath(args.viewer), CFG['uri']['tags']))
+
+    for tag in tags:
+        pagefp = join(abspath(args.viewer), CFG['uri']['tags'], tag+'.html')
+        with open(templatefp) as f:
+            templatef = f.read().format(title=CFG['title'], tag=tag)
+        with open(pagefp, 'w') as f:
+            f.write(templatef)
+
+    logging.info('Written tag pages')
 
 # Setup
 logging.basicConfig(format=CFG['log_format'].format(PN), level=logging.INFO)
@@ -76,7 +96,7 @@ for tag in tags:
             resource for resource in get_tagged_resources(metadata, (tag,))]
 
 #build_resource_pages()
-#build_tag_pages()
-build_index()
+build_tag_pages(resources_by_tag)
+build_index(resources_by_tag)
 
 # vim: ft=python

@@ -22,7 +22,15 @@
     "log_format": "[{0}]: %(message)s",
     "title": "resources-viewer",
     "includes": "_includes",
-    "homeuri": "index.html",
-    "stylesheets": "css"
+    "stylesheets": "css",
+    "tag_tmpl": "by_tag.html",
+    "tag_link_tmpl": "<li><a href=\"./tags/{tag}.html\">{tag}</a></li>",
+    "tag_links_tmpl": "<ul>{tags}</ul>",
+
+    "uri": {
+      "home": "index.html",
+      "resources": "resources",
+      "tags": "tags"
+    }
   }
 }
