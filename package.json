@@ -24,6 +24,7 @@
     "includes": "_includes",
     "stylesheets": "css",
     "tag_tmpl": "by_tag.html",
+    "resource_tmpl": "resource.html",
     "tag_link_tmpl": "<li><a href=\"./tags/{tag}.html\">{tag}</a></li>",
     "tag_links_tmpl": "<ul>{tags}</ul>",
 

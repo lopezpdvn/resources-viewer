@@ -9,7 +9,6 @@ import sys
 import os
 import atexit
 import gc
-import re
 import logging
 import argparse
 import json
@@ -58,7 +57,7 @@ def build_index(data):
 
     stylesheetsfp = join(SCRIPT_DIR, '..', CFG['stylesheets'])
     copytree(stylesheetsfp, join(viewerfp, CFG['stylesheets']))
-    logging.info('Written index')
+    logging.info('Written index page')
 
 def build_tag_pages(data):
     tags = data.keys()
@@ -73,6 +72,22 @@ def build_tag_pages(data):
             f.write(templatef)
 
     logging.info('Written tag pages')
+
+def build_resource_pages(metadata):
+    mkdir(join(abspath(args.viewer), CFG['uri']['resources']))
+    templatefp = join(SCRIPT_DIR, '..', CFG['includes'], CFG['resource_tmpl'])
+    rsrcuris = [rsrcuri.replace('/', '-') for rsrcuri in
+        set(chain.from_iterable(rsrc['path'] for rsrc in metadata))]
+
+    for rsrcuri in rsrcuris:
+        pagefp = join(abspath(args.viewer),
+                CFG['uri']['resources'], rsrcuri+'.html')
+        with open(templatefp) as f:
+            templatef = f.read().format(title=CFG['title'], resource=rsrcuri)
+        with open(pagefp, 'w') as f:
+            f.write(templatef)
+
+    logging.info('Written resource pages')
 
 # Setup
 logging.basicConfig(format=CFG['log_format'].format(PN), level=logging.INFO)
@@ -95,7 +110,7 @@ for tag in tags:
     resources_by_tag[tag] = [
             resource for resource in get_tagged_resources(metadata, (tag,))]
 
-#build_resource_pages()
+build_resource_pages(metadata)
 build_tag_pages(resources_by_tag)
 build_index(resources_by_tag)
 
