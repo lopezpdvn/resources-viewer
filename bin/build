@@ -66,8 +66,12 @@ def build_tag_pages(data):
 
     for tag in tags:
         pagefp = join(abspath(args.viewer), CFG['uri']['tags'], tag+'.html')
+        rsrcs = get_resource_uris(data[tag])
+        rsrcs_ul = ''.join(CFG['resource_link_tmpl'].format(resource=rsrc)
+                for rsrc in rsrcs)
         with open(templatefp) as f:
-            templatef = f.read().format(title=CFG['title'], tag=tag)
+            templatef = f.read().format(title=CFG['title'], tag=tag,
+                    resources=CFG['resource_links_tmpl'].format(resources=rsrcs_ul))
         with open(pagefp, 'w') as f:
             f.write(templatef)
 
@@ -76,10 +80,8 @@ def build_tag_pages(data):
 def build_resource_pages(metadata):
     mkdir(join(abspath(args.viewer), CFG['uri']['resources']))
     templatefp = join(SCRIPT_DIR, '..', CFG['includes'], CFG['resource_tmpl'])
-    rsrcuris = [rsrcuri.replace('/', '-') for rsrcuri in
-        set(chain.from_iterable(rsrc['path'] for rsrc in metadata))]
 
-    for rsrcuri in rsrcuris:
+    for rsrcuri in get_resource_uris(metadata):
         pagefp = join(abspath(args.viewer),
                 CFG['uri']['resources'], rsrcuri+'.html')
         with open(templatefp) as f:
@@ -88,6 +90,13 @@ def build_resource_pages(metadata):
             f.write(templatef)
 
     logging.info('Written resource pages')
+
+def get_resource_uris(rsrcs):
+    rt = set()
+    for rsrc in rsrcs:
+        for rsrcuri in rsrc['path']:
+            rt.add(rsrcuri.replace('/', '-'))
+    return list(rt)
 
 # Setup
 logging.basicConfig(format=CFG['log_format'].format(PN), level=logging.INFO)
@@ -113,5 +122,8 @@ for tag in tags:
 build_resource_pages(metadata)
 build_tag_pages(resources_by_tag)
 build_index(resources_by_tag)
+
+#pprint(metadata)
+#pprint(resources_by_tag)
 
 # vim: ft=python
