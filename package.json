@@ -29,6 +29,9 @@
     "resource_tmpl": "resource.html",
     "resource_link_tmpl": "<li><a href=\"../resources/{resource}.html\">{resource}</a></li>",
     "resource_links_tmpl": "<ul>{resources}</ul>",
+    "resource_exts": ["JPG"],
+    "resource_img": "<p><a href=\"{uri}\"><img src=\"{uri}\" height=\"200px\" /></a></p>",
+    "resource_imgs": "{imgs}",
 
     "uri": {
       "home": "index.html",

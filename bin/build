@@ -9,6 +9,7 @@ import sys
 import os
 import atexit
 import gc
+import re
 import logging
 import argparse
 import json
@@ -17,8 +18,10 @@ from pprint import pprint
 from itertools import chain
 from subprocess import Popen, PIPE
 from os.path import abspath, dirname, join, basename
-from os import mkdir
+from os import mkdir, listdir
 from shutil import copytree
+from glob import glob
+from fnmatch import fnmatch, translate
 
 # Related third party imports.
 from pysyspol.util import getdir
@@ -77,15 +80,26 @@ def build_tag_pages(data):
 
     logging.info('Written tag pages')
 
-def build_resource_pages(metadata):
+def build_resource_pages(metadata, datafp):
     mkdir(join(abspath(args.viewer), CFG['uri']['resources']))
     templatefp = join(SCRIPT_DIR, '..', CFG['includes'], CFG['resource_tmpl'])
+    datafp = abspath(datafp)
 
     for rsrcuri in get_resource_uris(metadata):
         pagefp = join(abspath(args.viewer),
                 CFG['uri']['resources'], rsrcuri+'.html')
+        rsrcsfp = join(datafp, rsrcuri.replace('-', '/'))
+        rsrcss = set()
+        for ext in CFG['resource_exts']:
+            reobj = re.compile(translate('*.' + ext), re.IGNORECASE)
+            rsrcss.update(set(
+                join(datafp, rsrcsfp, f) for f in listdir(rsrcsfp) if reobj.match(f)))
+
+        images = [CFG['resource_img'].format(uri=rsrcs) for rsrcs in rsrcss]
+
         with open(templatefp) as f:
-            templatef = f.read().format(title=CFG['title'], resource=rsrcuri)
+            templatef = f.read().format(title=CFG['title'], resource=rsrcuri,
+                    images=''.join(images))
         with open(pagefp, 'w') as f:
             f.write(templatef)
 
@@ -119,7 +133,7 @@ for tag in tags:
     resources_by_tag[tag] = [
             resource for resource in get_tagged_resources(metadata, (tag,))]
 
-build_resource_pages(metadata)
+build_resource_pages(metadata, args.data)
 build_tag_pages(resources_by_tag)
 build_index(resources_by_tag)
 
