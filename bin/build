@@ -83,7 +83,10 @@ def build_tag_pages(data):
 def build_resource_pages(metadata, datafp):
     mkdir(join(abspath(args.viewer), CFG['uri']['resources']))
     templatefp = join(SCRIPT_DIR, '..', CFG['includes'], CFG['resource_tmpl'])
-    datafp = abspath(datafp)
+
+    # Path from resources pages to app home
+    rel = ['..'] * (CFG['uri']['resources'].rstrip('/').count('/') + 1)
+    rel = '/'.join(rel)
 
     for rsrcuri in get_resource_uris(metadata):
         pagefp = join(abspath(args.viewer),
@@ -93,7 +96,7 @@ def build_resource_pages(metadata, datafp):
         for ext in CFG['resource_exts']:
             reobj = re.compile(translate('*.' + ext), re.IGNORECASE)
             rsrcss.update(set(
-                join(datafp, rsrcsfp, f) for f in listdir(rsrcsfp) if reobj.match(f)))
+                join(rel, rsrcsfp, f) for f in listdir(rsrcsfp) if reobj.match(f)))
 
         images = [CFG['resource_img'].format(uri=rsrcs) for rsrcs in rsrcss]
 
