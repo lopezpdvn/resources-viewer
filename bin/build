@@ -25,6 +25,7 @@ from fnmatch import fnmatch, translate
 
 # Related third party imports.
 from pysyspol.util import getdir
+from pysyspol.medasys import get_tagged_resources
 
 # Configuration and GLOBAL CONSTANT names.
 PN = os.path.splitext(os.path.basename(sys.argv[0]))[0]
@@ -40,12 +41,6 @@ def on_exit():
 def validate_args(args):
     assert args.data
     assert args.metadata
-
-def get_tagged_resources(metadata, tags):
-    for tag in tags:
-        for resource in metadata:
-            if tag in resource['tags']:
-                yield resource
 
 def build_index(data):
     viewerfp = abspath(args.viewer)
