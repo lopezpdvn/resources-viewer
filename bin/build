@@ -25,15 +25,13 @@ from fnmatch import fnmatch, translate
 
 # Related third party imports.
 from pysyspol.util import getdir
-from pysyspol.medasys import get_tagged_resources
+from pysyspol.medasys import get_tagged_resources, logging_config
 
 # Configuration and GLOBAL CONSTANT names.
-PN = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 SCRIPT_DIR = getdir(inspect.currentframe())
 configfp = join(dirname(SCRIPT_DIR), 'package.json')
 with open(configfp) as f:
     CFG = json.load(f)['config']
-LOG_FMT = CFG['log_format'].format(PN)
 
 def on_exit():
     gc.collect()
@@ -111,7 +109,7 @@ def get_resource_uris(rsrcs):
     return list(rt)
 
 # Setup
-logging.basicConfig(format=CFG['log_format'].format(PN), level=logging.INFO)
+logging_config()
 parser = argparse.ArgumentParser()
 parser.add_argument('data')
 parser.add_argument('metadata')
