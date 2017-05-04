@@ -62,7 +62,7 @@ def build_tag_pages(data):
 
     for tag in tags:
         pagefp = join(abspath(args.viewer), CFG['uri']['tags'], tag+'.html')
-        rsrcs = get_resource_uris(data[tag])
+        rsrcs = [x[0] for x in get_resource_uris(data[tag])]
         rsrcs_ul = ''.join(CFG['resource_link_tmpl'].format(resource=rsrc)
                 for rsrc in rsrcs)
         with open(templatefp) as f:
@@ -81,7 +81,7 @@ def build_resource_pages(metadata, datafp):
     rel = ['..'] * (CFG['uri']['resources'].rstrip('/').count('/') + 1)
     rel = '/'.join(rel)
 
-    for rsrcuri in get_resource_uris(metadata):
+    for rsrcuri, desc in get_resource_uris(metadata):
         pagefp = join(abspath(args.viewer),
                 CFG['uri']['resources'], rsrcuri+'.html')
         rsrcsfp = join(datafp, rsrcuri.replace('-', '/'))
@@ -95,7 +95,7 @@ def build_resource_pages(metadata, datafp):
 
         with open(templatefp) as f:
             templatef = f.read().format(title=CFG['title'], resource=rsrcuri,
-                    images=''.join(images))
+                    images=''.join(images), desc=desc)
         with open(pagefp, 'w') as f:
             f.write(templatef)
 
@@ -105,7 +105,9 @@ def get_resource_uris(rsrcs):
     rt = set()
     for rsrc in rsrcs:
         for rsrcuri in rsrc['path']:
-            rt.add(rsrcuri.replace('/', '-'))
+            rsrcuri = rsrcuri.replace('/', '-')
+            desc = "\n".join(rsrc['desc'])
+            rt.add((rsrcuri, desc))
     return list(rt)
 
 # Setup
